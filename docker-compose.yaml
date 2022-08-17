@@ -1,8 +1,5 @@
 version: '3'
-
-networks:
-  whaticket:
-
+  
 services:
 
   backend:
@@ -24,8 +21,8 @@ services:
       - ${BACKEND_PORT:-8080}:3000
     volumes:
       - ./backend/public/:/usr/src/app/public/
-    networks:
-      - whaticket
+    
+      
 
   frontend:
     ports:
@@ -42,8 +39,8 @@ services:
     volumes:
       - ./ssl/certs/:/etc/nginx/ssl/
       - ./ssl/www/:/var/www/letsencrypt/
-    networks:
-      - whaticket
+    
+      
 
   mysql:
     image: ${MYSQL_ENGINE:-mariadb}:${MYSQL_VERSION:-10.6}
@@ -57,5 +54,5 @@ services:
     ports:
       - ${MYSQL_PORT:-3306}:3306
     restart: always
-    networks:
-      - whaticket
+    
+      

@@ -76,6 +76,10 @@ const verifyMediaMessage = async (
     throw new Error("ERR_WAPP_DOWNLOAD_MEDIA");
   }
 
+  if (media.filename) {
+    media.filename = `${ticket.id}-${media.filename}`;
+  }
+
   if (!media.filename) {
     const ext = media.mimetype.split("/")[1].split(";")[0];
     media.filename = `${new Date().getTime()}.${ext}`;

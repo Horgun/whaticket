@@ -31,6 +31,10 @@ import whatsBackground from "../../assets/wa-background.png";
 import api from "../../services/api";
 import toastError from "../../errors/toastError";
 
+function isIOSDevice(){
+  return !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform);
+}
+
 const useStyles = makeStyles((theme) => ({
   messagesListWrapper: {
     overflow: "hidden",
@@ -257,6 +261,11 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: "center",
     backgroundColor: "inherit",
     padding: 10,
+  },
+
+  ticketNunber: {
+    color: "#808888",
+    padding: 8,
   },
 }));
 
@@ -556,6 +565,22 @@ const MessagesList = ({ ticketId, isGroup }) => {
     }
   };
 
+  const renderNumberTicket = (message, index) => {
+    if (index < messagesList.length && index > 0) {
+      let messageTicket = message.ticketId;
+      let previousMessageTicket = messagesList[index - 1].ticketId;
+
+      if (messageTicket !== previousMessageTicket) {
+        return (
+          <div key={`ticket-${message.id}`} className={classes.ticketNumber}>
+            #ticket: {messageTicket}
+            <hr />
+          </div>
+        );
+      }
+    }
+  };
+
   const renderMessageDivider = (message, index) => {
     if (index < messagesList.length && index > 0) {
       let messageUser = messagesList[index].fromMe;
@@ -601,6 +626,7 @@ const MessagesList = ({ ticketId, isGroup }) => {
             <React.Fragment key={message.id}>
               {renderDailyTimestamps(message, index)}
               {renderMessageDivider(message, index)}
+              {renderNumberTicket(message, index)}
               <div className={classes.messageLeft}>
                 <IconButton
                   variant="contained"
@@ -623,6 +649,11 @@ const MessagesList = ({ ticketId, isGroup }) => {
                 <div className={classes.textContentItem}>
                   {message.quotedMsg && renderQuotedMessage(message)}
                   <MarkdownWrapper>{message.body}</MarkdownWrapper>
+                  {isIOSDevice() && message.mediaUrl && (
+                    <div>
+                    <a href={message.mediaUrl}>Link</a>
+                    </div>
+                  )}
                   <span className={classes.timestamp}>
                     {format(parseISO(message.createdAt), "HH:mm")}
                   </span>
@@ -635,6 +666,7 @@ const MessagesList = ({ ticketId, isGroup }) => {
             <React.Fragment key={message.id}>
               {renderDailyTimestamps(message, index)}
               {renderMessageDivider(message, index)}
+              {renderNumberTicket(message, index)}
               <div className={classes.messageRight}>
                 <IconButton
                   variant="contained"
@@ -663,6 +695,11 @@ const MessagesList = ({ ticketId, isGroup }) => {
                   )}
                   {message.quotedMsg && renderQuotedMessage(message)}
                   <MarkdownWrapper>{message.body}</MarkdownWrapper>
+                  {isIOSDevice() && message.mediaUrl && (
+                    <div>
+                    <a href={message.mediaUrl}>Link</a>
+                    </div>
+                  )}
                   <span className={classes.timestamp}>
                     {format(parseISO(message.createdAt), "HH:mm")}
                     {renderMessageAck(message)}

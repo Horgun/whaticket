@@ -5,6 +5,7 @@ import Ticket from "../../models/Ticket";
 import Contact from "../../models/Contact";
 import Message from "../../models/Message";
 import Queue from "../../models/Queue";
+import User from "../../models/User";
 import ShowUserService from "../UserServices/ShowUserService";
 import Whatsapp from "../../models/Whatsapp";
 
@@ -55,6 +56,11 @@ const ListTicketsService = async ({
     {
       model: Whatsapp,
       as: "whatsapp",
+      attributes: ["name"]
+    },
+    {
+      model: User,
+      as: "user",
       attributes: ["name"]
     }
   ];

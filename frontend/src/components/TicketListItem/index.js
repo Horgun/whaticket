@@ -114,6 +114,21 @@ const useStyles = makeStyles(theme => ({
 		borderRadius: 10,
 		fontSize: "0.9em"
 	},
+
+        userNameTag: {
+                position: "absolute",
+                marginRight: 5,
+                right: 75,
+                bottom: 5,
+                background: "#2576D2",
+                color: "#ffffff",
+                border: "1px solid #CCC",
+                padding: 1,
+                paddingLeft: 5,
+                paddingRight: 5,
+                borderRadius: 10,
+                fontSize: "0.9em"
+        },
 }));
 
 const TicketListItem = ({ ticket }) => {
@@ -213,6 +228,9 @@ const TicketListItem = ({ ticket }) => {
 							)}
 							{ticket.whatsappId && (
 								<div className={classes.userTag} title={i18n.t("ticketsList.connectionTitle")}>{ticket.whatsapp?.name}</div>
+							)}
+                                                        {ticket.whatsappId && ticket.userId != user?.id && (
+								<div className={classes.userNameTag}>{ticket.user?.name}</div>
 							)}
 						</span>
 					}
