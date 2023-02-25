@@ -455,7 +455,7 @@ const MessagesList = ({ ticketId, isGroup }) => {
           }
         }
       }
-      return <VcardPreview contact={contact} numbers={obj[0]?.number} />
+      return <VcardPreview contact={contact} numbers={obj[0]?.number ?? ""} />
     }
     /*else if (message.mediaType === "multi_vcard") {
       console.log("multi_vcard")
