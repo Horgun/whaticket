@@ -19,10 +19,19 @@ import useTickets from "../../hooks/useTickets";
 const Chart = () => {
 	const theme = useTheme();
 
-	const date = useRef(new Date().toISOString());
-	const { tickets } = useTickets({ date: date.current });
+	const [date, setDate] = useState(new Date().toLocaleDateString("sv"));
+	const [pageNumber, setPageNumber] = useState(1);
+	const {tickets, hasMore, loading, count} = useTickets({ pageNumber: pageNumber, date: date });
 
 	const [chartData, setChartData] = useState([
+		{ time: "00:00", amount: 0 },
+		{ time: "01:00", amount: 0 },
+		{ time: "02:00", amount: 0 },
+		{ time: "03:00", amount: 0 },
+		{ time: "04:00", amount: 0 },
+		{ time: "05:00", amount: 0 },
+		{ time: "06:00", amount: 0 },
+		{ time: "07:00", amount: 0 },
 		{ time: "08:00", amount: 0 },
 		{ time: "09:00", amount: 0 },
 		{ time: "10:00", amount: 0 },
@@ -35,6 +44,10 @@ const Chart = () => {
 		{ time: "17:00", amount: 0 },
 		{ time: "18:00", amount: 0 },
 		{ time: "19:00", amount: 0 },
+		{ time: "20:00", amount: 0 },
+		{ time: "21:00", amount: 0 },
+		{ time: "22:00", amount: 0 },
+		{ time: "23:00", amount: 0 },
 	]);
 
 	useEffect(() => {
@@ -52,10 +65,37 @@ const Chart = () => {
 		});
 	}, [tickets]);
 
+	useEffect(() => {
+		if (!loading && hasMore){
+			setPageNumber(prev => prev + 1);
+		}
+	}, [loading]);
+
+	function handleDateChange(event) {
+		setDate(event.target.value);
+		setChartData(prevState => {
+			let aux = [...prevState];
+
+			aux.forEach(a => {
+				a.amount = 0;
+			});
+
+			return aux;
+		});
+		setPageNumber(1);
+	}
+
 	return (
 		<React.Fragment>
+			<input
+				value={date}
+				onChange={handleDateChange}
+				type="date"
+				id="data"
+				name="data"
+			/>
 			<Title>{`${i18n.t("dashboard.charts.perDay.title")}${
-				tickets.length
+				count
 			}`}</Title>
 			<ResponsiveContainer>
 				<BarChart
