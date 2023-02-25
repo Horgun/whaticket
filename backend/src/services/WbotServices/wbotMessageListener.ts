@@ -25,6 +25,7 @@ import UpdateTicketService from "../TicketServices/UpdateTicketService";
 import CreateContactService from "../ContactServices/CreateContactService";
 import GetContactService from "../ContactServices/GetContactService";
 import formatBody from "../../helpers/Mustache";
+import { PorterStemmerPt } from "natural";
 
 interface Session extends Client {
   id?: number;
@@ -167,7 +168,13 @@ const verifyQueue = async (
     return;
   }
 
-  const selectedOption = msg.body;
+  let selectedOption = 0;
+  let regexBody = new RegExp(PorterStemmerPt.stem(msg.body), "gi");
+  queues.forEach((queue, index) => {
+    if (`${index + 1} - ${PorterStemmerPt.stem(queue.name)}`.match(regexBody)) {
+      selectedOption = index + 1;
+    }
+  });
 
   const choosenQueue = queues[+selectedOption - 1];
 
@@ -269,7 +276,7 @@ const handleMessage = async (
     }
     const whatsapp = await ShowWhatsAppService(wbot.id!);
 
-    const unreadMessages = msg.fromMe ? 0 : chat.unreadCount;
+    const unreadMessages = msg.fromMe ? 0 : chat.unreadCount + 1;
 
     const contact = await verifyContact(msgContact);
 
