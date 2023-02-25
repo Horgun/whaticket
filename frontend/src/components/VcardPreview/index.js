@@ -23,11 +23,12 @@ const VcardPreview = ({ contact, numbers }) => {
 
     useEffect(() => {
         const delayDebounceFn = setTimeout(() => {
-            const fetchContacts = async() => {
+            const fetchContacts = async () => {
                 try {
                     let contactObj = {
                         name: contact,
-                        number: numbers.replace(/\D/g, ""),
+                        // number: numbers.replace(/\D/g, ""),
+                        number: numbers !== undefined && numbers.replace(/\D/g, ""),
                         email: ""
                     }
                     const { data } = await api.post("/contact", contactObj);
@@ -43,7 +44,7 @@ const VcardPreview = ({ contact, numbers }) => {
         return () => clearTimeout(delayDebounceFn);
     }, [contact, numbers]);
 
-    const handleNewChat = async() => {
+    const handleNewChat = async () => {
         try {
             const { data: ticket } = await api.post("/tickets", {
                 contactId: selectedContact.id,
