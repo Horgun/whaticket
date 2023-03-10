@@ -30,7 +30,6 @@ const ListMessagesService = async ({
   const offset = limit * (+pageNumber - 1);
 
   const { count, rows: messages } = await Message.findAndCountAll({
-    //where: { ticketId },
     //where: { contactId: ticket.contactId },
     limit,
     include: [
@@ -46,6 +45,7 @@ const ListMessagesService = async ({
 	required: true
       }
     ],
+    where: { "$ticket.queueId$": ticket.queueId },
     offset,
     order: [["createdAt", "DESC"]]
   });
