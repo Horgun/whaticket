@@ -177,7 +177,8 @@ const reducer = (state, action) => {
 		if (!status && !searchParam) return;
 		dispatch({
 			type: "LOAD_TICKETS",
-			payload: tickets,
+			payload: tickets.filter(ticket => showAll || ticket.queueId || 
+				(!ticket.queueId && ticket.whatsappId === user.whatsappId)),
 		});
 	}, [tickets]);
 
@@ -189,7 +190,8 @@ const reducer = (state, action) => {
 			(!ticket.queueId || selectedQueueIds.indexOf(ticket.queueId) > -1);
 
 		const notBelongsToUserQueues = ticket =>
-			ticket.queueId && selectedQueueIds.indexOf(ticket.queueId) === -1;
+			(ticket.queueId && selectedQueueIds.indexOf(ticket.queueId) === -1) ||
+			(!showAll && !ticket.queueId && !ticket.userId && ticket.whatsappId !== user.whatsappId);
 
 		socket.on("connect", () => {
 			if (status) {
