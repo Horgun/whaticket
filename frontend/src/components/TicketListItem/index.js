@@ -229,7 +229,7 @@ const TicketListItem = ({ ticket }) => {
 							{ticket.whatsappId && (
 								<div className={classes.userTag} title={i18n.t("ticketsList.connectionTitle")}>{ticket.whatsapp?.name}</div>
 							)}
-                                                        {ticket.whatsappId && ticket.userId != user?.id && (
+                                                        {ticket.whatsappId && ticket.userId !== user?.id && (
 								<div className={classes.userNameTag}>{ticket.user?.name}</div>
 							)}
 						</span>
