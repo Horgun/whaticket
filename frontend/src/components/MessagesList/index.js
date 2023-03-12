@@ -104,6 +104,7 @@ const useStyles = makeStyles((theme) => ({
     borderRadius: "7.5px",
     display: "flex",
     position: "relative",
+    cursor: "pointer",
   },
 
   quotedMsg: {
@@ -158,6 +159,7 @@ const useStyles = makeStyles((theme) => ({
     borderRadius: "7.5px",
     display: "flex",
     position: "relative",
+    cursor: "pointer",
   },
 
   quotedMsgRight: {
@@ -329,6 +331,7 @@ const MessagesList = ({ ticketId, isGroup }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const messageOptionsMenuOpen = Boolean(anchorEl);
   const currentTicketId = useRef(ticketId);
+  const [lookForQuoted, setLookForQuoted] = useState(null);
 
   useEffect(() => {
     dispatch({ type: "RESET" });
@@ -388,6 +391,18 @@ const MessagesList = ({ ticketId, isGroup }) => {
     };
   }, [ticketId]);
 
+  useEffect(() => {
+    if (!lookForQuoted || loading) return;
+    let message = document.querySelector(`#messagesList [data-id="${lookForQuoted}"]`);
+    if (message){
+      message.scrollIntoView({behavior: "smooth"});
+      setLookForQuoted(null);
+    }
+    else{
+      loadMore();
+    }
+  }, [lookForQuoted, loading]);
+
   const loadMore = () => {
     setPageNumber((prevPageNumber) => prevPageNumber + 1);
   };
@@ -422,6 +437,10 @@ const MessagesList = ({ ticketId, isGroup }) => {
 
   const handleCloseMessageOptionsMenu = (e) => {
     setAnchorEl(null);
+  };
+
+  const handleQuotedMessageClick = (quotedMessageId) => {
+    setLookForQuoted(quotedMessageId);
   };
 
   const checkMessageMedia = (message) => {
@@ -597,6 +616,7 @@ const MessagesList = ({ ticketId, isGroup }) => {
         className={clsx(classes.quotedContainerLeft, {
           [classes.quotedContainerRight]: message.fromMe,
         })}
+        onClick={() => handleQuotedMessageClick(message.quotedMsg?.id)}
       >
         <span
           className={clsx(classes.quotedSideColorLeft, {
@@ -624,7 +644,7 @@ const MessagesList = ({ ticketId, isGroup }) => {
               {renderDailyTimestamps(message, index)}
               {renderMessageDivider(message, index)}
               {renderNumberTicket(message, index)}
-              <div className={classes.messageLeft}>
+              <div className={classes.messageLeft} data-id={message.id}>
                 <IconButton
                   variant="contained"
                   size="small"
@@ -664,7 +684,7 @@ const MessagesList = ({ ticketId, isGroup }) => {
               {renderDailyTimestamps(message, index)}
               {renderMessageDivider(message, index)}
               {renderNumberTicket(message, index)}
-              <div className={classes.messageRight}>
+              <div className={classes.messageRight} data-id={message.id}>
                 <IconButton
                   variant="contained"
                   size="small"
