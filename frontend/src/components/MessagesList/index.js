@@ -629,7 +629,9 @@ const MessagesList = ({ ticketId, isGroup }) => {
               {message.quotedMsg?.contact?.name}
             </span>
           )}
-          {message.quotedMsg?.body}
+          {(message.quotedMsg?.mediaType === "location") ? 
+		message.quotedMsg?.body.split("|").pop()
+		: message.quotedMsg?.body}
         </div>
       </div>
     );
