@@ -56,6 +56,7 @@ const NotificationsPopOver = () => {
 	const { tickets } = useTickets({ withUnreadMessages: "true" });
 	const [play] = useSound(alertSound);
 	const soundAlertRef = useRef();
+	const [pageTitle, setPageTitle] = useState(document.title);
 
 	const historyRef = useRef(history);
 
@@ -72,6 +73,13 @@ const NotificationsPopOver = () => {
 	useEffect(() => {
 		setNotifications(tickets);
 	}, [tickets]);
+
+	useEffect(() => {
+		if (notifications.length > 0)
+			document.title= `(${notifications.length}) ${pageTitle}`;
+		else
+			document.title= pageTitle;
+	});
 
 	useEffect(() => {
 		ticketIdRef.current = ticketIdUrl;
@@ -105,6 +113,28 @@ const NotificationsPopOver = () => {
 					return prevState;
 				});
 			}
+			else if (data.action === "update" && data.ticket.status !== "closed" &&
+			data.ticket.unreadMessages > 0 &&
+			 (data.ticket.userId === user?.id || !data.ticket.userId)) {
+				const shouldNotNotificate =
+					(data.ticket.id === ticketIdRef.current &&
+							document.visibilityState === "visible") ||
+					(data.ticket.userId && data.ticket.userId !== user?.id) ||
+					data.ticket.isGroup || user.queues.map(q => q.id).indexOf(data.ticket.queueId) === -1;
+
+				if (shouldNotNotificate) return;
+
+				setNotifications(prevState => {
+					const ticketIndex = prevState.findIndex(t => t.id === data.ticket.id);
+					if (ticketIndex !== -1) {
+						prevState[ticketIndex] = data.ticket;
+						return [...prevState];
+					}
+
+					soundAlertRef.current();
+					return [data.ticket, ...prevState];
+				});
+			}
 		});
 
 		socket.on("appMessage", data => {
@@ -113,6 +143,14 @@ const NotificationsPopOver = () => {
 				!data.message.read &&
 				(data.ticket.userId === user?.id || !data.ticket.userId)
 			) {
+				const shouldNotNotificate =
+					(data.message.ticketId === ticketIdRef.current &&
+							document.visibilityState === "visible") ||
+					(data.ticket.userId && data.ticket.userId !== user?.id) ||
+					data.ticket.isGroup || user.queues.map(q => q.id).indexOf(data.ticket.queueId) === -1;
+
+				if (shouldNotNotificate) return;
+
 				setNotifications(prevState => {
 					const ticketIndex = prevState.findIndex(t => t.id === data.ticket.id);
 					if (ticketIndex !== -1) {
@@ -121,14 +159,6 @@ const NotificationsPopOver = () => {
 					}
 					return [data.ticket, ...prevState];
 				});
-
-				const shouldNotNotificate =
-					(data.message.ticketId === ticketIdRef.current &&
-						document.visibilityState === "visible") ||
-					(data.ticket.userId && data.ticket.userId !== user?.id) ||
-					data.ticket.isGroup || user.queues.map(q => q.id).indexOf(data.ticket.queueId) === -1;
-
-				if (shouldNotNotificate) return;
 
 				handleNotifications(data);
 			}
