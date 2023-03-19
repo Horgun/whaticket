@@ -56,7 +56,7 @@ const NotificationsPopOver = () => {
 	const { tickets } = useTickets({ withUnreadMessages: "true" });
 	const [play] = useSound(alertSound);
 	const soundAlertRef = useRef();
-	const [pageTitle, setPageTitle] = useState(document.title);
+	const [pageTitle, ] = useState(document.title);
 
 	const historyRef = useRef(history);
 
@@ -68,6 +68,7 @@ const NotificationsPopOver = () => {
 		} else {
 			Notification.requestPermission();
 		}
+		
 	}, [play]);
 
 	useEffect(() => {
@@ -79,7 +80,7 @@ const NotificationsPopOver = () => {
 			document.title= `(${notifications.length}) ${pageTitle}`;
 		else
 			document.title= pageTitle;
-	});
+	}, [notifications]);
 
 	useEffect(() => {
 		ticketIdRef.current = ticketIdUrl;
@@ -161,6 +162,7 @@ const NotificationsPopOver = () => {
 				});
 
 				handleNotifications(data);
+				soundAlertRef.current();
 			}
 		});
 
@@ -201,7 +203,6 @@ const NotificationsPopOver = () => {
 			return [notification, ...prevState];
 		});
 
-		soundAlertRef.current();
 	};
 
 	const handleClick = () => {
