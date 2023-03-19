@@ -36,12 +36,12 @@
     "pino-pretty": "~4.7.1",
     "qrcode-terminal": "^0.12.0",
     "reflect-metadata": "^0.1.13",
-    "sequelize": "^6.29.0",
+    "sequelize": "^5.22.3",
     "sequelize-cli": "^5.5.1",
-    "sequelize-typescript": "^2.1.5",
+    "sequelize-typescript": "^1.1.0",
     "socket.io": "^4.6.1",
     "uuid": "^8.3.2",
-    "whatsapp-web.js": "^1.18.3",
+    "whatsapp-web.js": "^1.19.5",
     "yup": "^0.32.8"
   },
   "devDependencies": {
