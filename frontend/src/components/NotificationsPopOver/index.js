@@ -44,6 +44,7 @@ const useStyles = makeStyles(theme => ({
 const NotificationsPopOver = () => {
 	const classes = useStyles();
 
+	const history = useHistory();
 	const { user } = useContext(AuthContext);
 	const ticketIdUrl = +history.location.pathname.split("/")[2];
 	const ticketIdRef = useRef(ticketIdUrl);
