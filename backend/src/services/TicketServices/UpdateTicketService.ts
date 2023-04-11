@@ -2,6 +2,7 @@ import CheckContactOpenTickets from "../../helpers/CheckContactOpenTickets";
 import SetTicketMessagesAsRead from "../../helpers/SetTicketMessagesAsRead";
 import { getIO } from "../../libs/socket";
 import Ticket from "../../models/Ticket";
+import User from "../../models/User";
 import SendWhatsAppMessage from "../WbotServices/SendWhatsAppMessage";
 import ShowWhatsAppService from "../WhatsappService/ShowWhatsAppService";
 import ShowTicketService from "./ShowTicketService";
@@ -58,7 +59,15 @@ const UpdateTicketService = async ({
     });
   }
 
-  await ticket.reload();
+  await ticket.reload({
+    include: [
+      {
+        model: User,
+        as: "user",
+        attributes: ["id", "name"]
+      }
+    ]
+  });
 
   const io = getIO();
 
