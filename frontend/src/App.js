@@ -4,9 +4,12 @@ import "react-toastify/dist/ReactToastify.css";
 
 import { createTheme, ThemeProvider } from "@material-ui/core/styles";
 import { ptBR } from "@material-ui/core/locale";
+import { usePageVisibility } from 'react-page-visibility';
+import { isIOS } from 'react-device-detect';
 
 const App = () => {
   const [locale, setLocale] = useState();
+  const isVisible = usePageVisibility();
 
   const theme = createTheme(
     {
@@ -26,6 +29,11 @@ const App = () => {
     },
     locale
   );
+
+  useEffect(() => {
+    if (isIOS && isVisible && document.readyState === "complete")
+      window.location.reload();
+  }, [isVisible]);
 
   useEffect(() => {
     const i18nlocale = localStorage.getItem("i18nextLng");
