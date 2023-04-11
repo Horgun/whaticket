@@ -19,6 +19,7 @@ import { i18n } from "../../translate/i18n";
 import useTickets from "../../hooks/useTickets";
 import alertSound from "../../assets/sound.mp3";
 import { AuthContext } from "../../context/Auth/AuthContext";
+import { FormControlLabel, FormGroup, Switch } from "@material-ui/core";
 
 const useStyles = makeStyles(theme => ({
 	tabContainer: {
@@ -43,30 +44,26 @@ const useStyles = makeStyles(theme => ({
 const NotificationsPopOver = () => {
 	const classes = useStyles();
 
-	const history = useHistory();
 	const { user } = useContext(AuthContext);
 	const ticketIdUrl = +history.location.pathname.split("/")[2];
 	const ticketIdRef = useRef(ticketIdUrl);
 	const anchorEl = useRef();
 	const [isOpen, setIsOpen] = useState(false);
+	const [systemNotifEnabled, setSystemNotifEnabled] = useState(false);
 	const [notifications, setNotifications] = useState([]);
-
-	const [, setDesktopNotifications] = useState([]);
 
 	const { tickets } = useTickets({ withUnreadMessages: "true" });
 	const [play] = useSound(alertSound);
 	const soundAlertRef = useRef();
 	const [pageTitle, ] = useState(document.title);
 
-	const historyRef = useRef(history);
-
 	useEffect(() => {
 		soundAlertRef.current = play;
-
-		if (!("Notification" in window)) {
-			console.log("This browser doesn't support notifications");
-		} else {
-			Notification.requestPermission();
+		let storedNotifsEnabled = localStorage.getItem("notifsEnabled");
+		if (storedNotifsEnabled === "true"){
+			if (("Notification" in window) && Notification.permission === "granted"){
+				setSystemNotifEnabled(true);
+			}
 		}
 		
 	}, [play]);
@@ -102,17 +99,15 @@ const NotificationsPopOver = () => {
 					return prevState;
 				});
 
-				setDesktopNotifications(prevState => {
-					const notfiticationIndex = prevState.findIndex(
-						n => n.tag === String(data.ticketId)
-					);
-					if (notfiticationIndex !== -1) {
-						prevState[notfiticationIndex].close();
-						prevState.splice(notfiticationIndex, 1);
-						return [...prevState];
-					}
-					return prevState;
-				});
+				if (("Notification" in window) && Notification.permission === "granted") {
+					navigator.serviceWorker.ready.then((registration) => {
+						registration.getNotifications({ tag: `${data.ticketId}` }).then((notifs) => {
+							notifs.forEach(notif => {
+								notif.close();
+							});
+						});
+					});
+				}
 			}
 			else if (data.action === "update" && data.ticket.status !== "closed" &&
 			data.ticket.unreadMessages > 0 &&
@@ -132,7 +127,6 @@ const NotificationsPopOver = () => {
 						return [...prevState];
 					}
 
-					soundAlertRef.current();
 					return [data.ticket, ...prevState];
 				});
 			}
@@ -160,8 +154,8 @@ const NotificationsPopOver = () => {
 					}
 					return [data.ticket, ...prevState];
 				});
-
-				handleNotifications(data);
+				if (systemNotifEnabled)
+					handleNotifications(data);
 				soundAlertRef.current();
 			}
 		});
@@ -169,7 +163,7 @@ const NotificationsPopOver = () => {
 		return () => {
 			socket.disconnect();
 		};
-	}, [user]);
+	}, [user, systemNotifEnabled]);
 
 	const handleNotifications = data => {
 		const { message, contact, ticket } = data;
@@ -181,28 +175,13 @@ const NotificationsPopOver = () => {
 			renotify: true,
 		};
 
-		const notification = new Notification(
-			`${i18n.t("tickets.notification.message")} ${contact.name}`,
-			options
-		);
+		const title = `${i18n.t("tickets.notification.message")} ${contact.name}`;
 
-		notification.onclick = e => {
-			e.preventDefault();
-			window.focus();
-			historyRef.current.push(`/tickets/${ticket.id}`);
-		};
-
-		setDesktopNotifications(prevState => {
-			const notfiticationIndex = prevState.findIndex(
-				n => n.tag === notification.tag
-			);
-			if (notfiticationIndex !== -1) {
-				prevState[notfiticationIndex] = notification;
-				return [...prevState];
-			}
-			return [notification, ...prevState];
-		});
-
+		if (("Notification" in window) && Notification.permission === "granted") {
+			navigator.serviceWorker.ready.then((registration) => {
+				registration.showNotification(title, options);
+			});
+		}
 	};
 
 	const handleClick = () => {
@@ -215,6 +194,36 @@ const NotificationsPopOver = () => {
 
 	const NotificationTicket = ({ children }) => {
 		return <div onClick={handleClickAway}>{children}</div>;
+	};
+
+	const handleChangeSystemNotifs = (event) => {
+		let checked = event.target.checked;
+		let changedState = checked;
+		if (checked) {
+			if (!("Notification" in window)) {
+				console.log("This browser doesn't support notifications");
+				changedState = false;
+			} else {
+				if (Notification.permission === "granted"){
+					changedState = true;
+				}
+				else if (Notification.permission === "default")
+					Notification.requestPermission().then((result) => {
+						if (result === "granted"){
+							changedState = true;
+						}
+					});
+				else if (Notification.permission === "denied"){
+					changedState = false;
+				}
+			}
+		}
+		else{
+			changedState = false;
+		}
+
+		localStorage.setItem("notifsEnabled", `${changedState}`);
+		setSystemNotifEnabled(changedState);
 	};
 
 	return (
@@ -244,6 +253,10 @@ const NotificationsPopOver = () => {
 				classes={{ paper: classes.popoverPaper }}
 				onClose={handleClickAway}
 			>
+				<FormGroup>
+					<FormControlLabel control={<Switch checked={systemNotifEnabled} onChange={handleChangeSystemNotifs} />} 
+						label="Enable Notifications" />
+				</FormGroup>
 				<List dense className={classes.tabContainer}>
 					{notifications.length === 0 ? (
 						<ListItem>
