@@ -59,15 +59,7 @@ const UpdateTicketService = async ({
     });
   }
 
-  await ticket.reload({
-    include: [
-      {
-        model: User,
-        as: "user",
-        attributes: ["id", "name"]
-      }
-    ]
-  });
+  await ticket.reload();
 
   const io = getIO();
 
