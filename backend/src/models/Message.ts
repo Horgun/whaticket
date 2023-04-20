@@ -52,6 +52,9 @@ class Message extends Model<Message> {
   @Column
   isDeleted: boolean;
 
+  @Column
+  timestamp: number;
+
   @CreatedAt
   @Column(DataType.DATE(6))
   createdAt: Date;

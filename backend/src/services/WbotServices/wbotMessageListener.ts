@@ -106,7 +106,8 @@ const verifyMediaMessage = async (
     read: msg.fromMe,
     mediaUrl: media.filename,
     mediaType: media.mimetype.split("/")[0],
-    quotedMsgId: quotedMsg?.id
+    quotedMsgId: quotedMsg?.id,
+    timestamp: msg.timestamp
   };
 
   await ticket.update({ lastMessage: msg.body || media.filename });
@@ -133,7 +134,8 @@ const verifyMessage = async (
     fromMe: msg.fromMe,
     mediaType: msg.type,
     read: msg.fromMe,
-    quotedMsgId: quotedMsg?.id
+    quotedMsgId: quotedMsg?.id,
+    timestamp: msg.timestamp
   };
 
   await ticket.update({ lastMessage: msg.type === "location" ? msg.location.description ? "Localization - " + msg.location.description.split('\\n')[0] : "Localization" : msg.body });
@@ -435,9 +437,62 @@ const handleMsgAck = async (msg: WbotMessage, ack: MessageAck) => {
   }
 };
 
+const handleMsgDelete = async (msg: WbotMessage, wbot: Session) => {
+  
+  const io = getIO();
+  let msgContact: WbotContact;
+
+  try {
+    if (msg.fromMe) {
+      msgContact = await wbot.getContactById(msg.to);
+    } else {
+      msgContact = await msg.getContact();
+    }
+
+    const contact = await verifyContact(msgContact);
+    const contactId = contact.id;
+
+    const messages = await Message.findAll({
+      where: { timestamp: msg.timestamp },
+      include: [
+        "contact",
+        {
+          model: Message,
+          as: "quotedMsg",
+          include: ["contact"]
+        },
+        "ticket"
+      ]
+    });
+    let messageToDelete: Message | undefined;
+    for (let message of messages){
+      if (message.ticket.contactId === contactId){
+        messageToDelete = message;
+        break;
+      }
+    }
+    if (!messageToDelete) {
+      return;
+    }
+    await messageToDelete.update({ isDeleted: true });
+
+    io.to(messageToDelete.ticketId.toString()).emit("appMessage", {
+      action: "update",
+      message: messageToDelete
+    });
+  } catch (err) {
+    Sentry.captureException(err);
+    logger.error(`Error handling message delete. Err: ${err}`);
+  }
+};
+
 const wbotMessageListener = (wbot: Session): void => {
   wbot.on("message_create", async msg => {
     handleMessage(msg, wbot);
+  });
+
+  wbot.on("message_revoke_everyone", async msg => {
+    handleMsgDelete(msg, wbot);
   });
 
   wbot.on("media_uploaded", async msg => {

@@ -203,7 +203,7 @@ const TicketListItem = ({ ticket }) => {
 								variant="body2"
 								color="textPrimary"
 							>
-								{ticket.contact.name}
+								{ticket.contact?.name}
 							</Typography>
 							{ticket.status === "closed" && (
 								<Badge
