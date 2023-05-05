@@ -3,8 +3,11 @@ import GetWbotMessage from "../../helpers/GetWbotMessage";
 import Message from "../../models/Message";
 import Ticket from "../../models/Ticket";
 
-const DeleteWhatsAppMessage = async (messageId: string): Promise<Message> => {
-  const message = await Message.findByPk(messageId, {
+const DeleteWhatsAppMessage = async (messageId: string): Promise<Message[]> => {
+  const messages = await Message.findAll({
+    where: {
+      id: messageId
+    },
     include: [
       {
         model: Ticket,
@@ -14,11 +17,11 @@ const DeleteWhatsAppMessage = async (messageId: string): Promise<Message> => {
     ]
   });
 
-  if (!message) {
+  if (messages.length === 0) {
     throw new AppError("No message found with this ID.");
   }
 
-  const { ticket } = message;
+  const { ticket } = messages[0];
 
   const messageToDelete = await GetWbotMessage(ticket, messageId);
 
@@ -27,10 +30,12 @@ const DeleteWhatsAppMessage = async (messageId: string): Promise<Message> => {
   } catch (err) {
     throw new AppError("ERR_DELETE_WAPP_MSG");
   }
+  
+  for (let i = 0; i < messages.length; i++){
+    await messages[i].update({ isDeleted: true });
+  }
 
-  await message.update({ isDeleted: true });
-
-  return message;
+  return messages;
 };
 
 export default DeleteWhatsAppMessage;

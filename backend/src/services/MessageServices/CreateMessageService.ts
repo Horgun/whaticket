@@ -22,7 +22,11 @@ const CreateMessageService = async ({
 }: Request): Promise<Message> => {
   await Message.upsert(messageData);
 
-  const message = await Message.findByPk(messageData.id, {
+  const message = await Message.findOne({
+    where: {
+      id: messageData.id,
+      fromMe: messageData.fromMe!
+    },
     include: [
       "contact",
       {

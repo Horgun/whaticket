@@ -65,12 +65,14 @@ export const remove = async (
 ): Promise<Response> => {
   const { messageId } = req.params;
 
-  const message = await DeleteWhatsAppMessage(messageId);
+  const messages = await DeleteWhatsAppMessage(messageId);
 
   const io = getIO();
-  io.to(message.ticketId.toString()).emit("appMessage", {
-    action: "update",
-    message
+  messages.forEach(message => {
+    io.to(message.ticketId.toString()).emit("appMessage", {
+      action: "update",
+      message
+    });
   });
 
   return res.send();
