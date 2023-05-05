@@ -40,9 +40,9 @@ const ListMessagesService = async ({
         include: ["contact"]
       },
       {
-	model: Ticket,
-	where: { contactId: ticket.contactId },
-	required: true
+        model: Ticket,
+        where: { contactId: ticket.contactId },
+        required: true
       }
     ],
     where: { "$ticket.queueId$": ticket.queueId },
