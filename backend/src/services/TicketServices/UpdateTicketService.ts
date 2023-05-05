@@ -31,7 +31,7 @@ const UpdateTicketService = async ({
 }: Request): Promise<Response> => {
   const { status, userId, queueId, whatsappId } = ticketData;
 
-  const ticket = await ShowTicketService(ticketId);
+  let ticket = await ShowTicketService(ticketId);
   if (!queueId)
     await SetTicketMessagesAsRead(ticket);
 
@@ -59,7 +59,7 @@ const UpdateTicketService = async ({
     });
   }
 
-  await ticket.reload();
+  ticket = await ShowTicketService(ticketId);
 
   const io = getIO();
 
