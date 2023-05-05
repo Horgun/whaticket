@@ -177,8 +177,8 @@ const reducer = (state, action) => {
 		if (!status && !searchParam) return;
 		dispatch({
 			type: "LOAD_TICKETS",
-			payload: tickets.filter(ticket => showAll || ticket.queueId || 
-				(!ticket.queueId && ticket.whatsappId === user.whatsappId)),
+			payload: tickets.filter(ticket => user.profile === "admin" || ticket.queueId || 
+				(showAll && ticket.whatsappId === user.whatsappId)),
 		});
 	}, [tickets]);
 
